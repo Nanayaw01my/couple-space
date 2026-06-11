@@ -21,12 +21,13 @@ export default function RegisterPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: form.name, email: form.email, password: form.password }),
       });
-      const data = await res.json();
-      if (!res.ok) { toast.error(data.error || 'Registration failed'); return; }
+      let data: any = {};
+      try { data = await res.json(); } catch { /* non-JSON response */ }
+      if (!res.ok) { toast.error(data.error || `Server error (${res.status}) — check env vars`); return; }
       const result = await signIn('credentials', { email: form.email, password: form.password, redirect: false });
       if (result?.ok) router.push('/setup');
       else toast.error('Login failed after registration');
-    } catch { toast.error('Something went wrong'); } finally { setLoading(false); }
+    } catch (err: any) { toast.error(err?.message || 'Network error — is the server running?'); } finally { setLoading(false); }
   }
 
   return (
