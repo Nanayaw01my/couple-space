@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap');
+
+* { box-sizing: border-box; }
+body { font-family: 'Inter', sans-serif; background: #f9fafb; }
+.font-playfair { font-family: 'Playfair Display', serif; }
+
+.glass {
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.pb-nav { padding-bottom: 72px; }
+.safe-area-inset-bottom { padding-bottom: env(safe-area-inset-bottom, 0px); }
+
+@keyframes heartbeat {
+  0%,100% { transform: scale(1); }
+  14% { transform: scale(1.2); }
+  28% { transform: scale(1); }
+  42% { transform: scale(1.15); }
+  70% { transform: scale(1); }
+}
+.animate-heartbeat { animation: heartbeat 1.8s ease-in-out infinite; }
