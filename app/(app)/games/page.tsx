@@ -1,7 +1,9 @@
 import Link from 'next/link';
 
 const GAMES = [
-  { href: '/games/truth-or-dare', emoji: '🎭', title: 'Truth or Dare', desc: 'Challenge each other from anywhere' },
+  { href: '/games/truth-or-dare', emoji: '🎭', title: 'Truth or Dare', desc: 'Challenge each other from anywhere', color: 'border-rose-100 bg-rose-50' },
+  { href: '/games/this-or-that', emoji: '🤔', title: 'This or That', desc: 'Pick one — see if you match!', color: 'border-pink-100 bg-pink-50' },
+  { href: '/games/never-have-i-ever', emoji: '🙈', title: 'Never Have I Ever', desc: 'Confess and see what your partner admits', color: 'border-purple-100 bg-purple-50' },
 ];
 
 export default function GamesPage() {
@@ -14,7 +16,7 @@ export default function GamesPage() {
       </div>
       <div className="space-y-3">
         {GAMES.map(g => (
-          <Link key={g.href} href={g.href} className="flex items-center gap-4 bg-white rounded-2xl border border-gray-100 shadow-sm p-5 active:scale-95 transition-all">
+          <Link key={g.href} href={g.href} className={`flex items-center gap-4 rounded-2xl border ${g.color} shadow-sm p-5 active:scale-95 transition-all`}>
             <span className="text-4xl">{g.emoji}</span>
             <div>
               <p className="font-bold text-gray-900">{g.title}</p>

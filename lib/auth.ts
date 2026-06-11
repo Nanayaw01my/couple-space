@@ -29,11 +29,20 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger }) {
       if (user) {
         token.id = user.id;
         token.coupleId = (user as any).coupleId;
         token.role = (user as any).role;
+      }
+      // Re-fetch coupleId from DB whenever session is updated or coupleId is missing.
+      // This handles the case where the user sets up a couple after logging in.
+      if (token.id && (!token.coupleId || trigger === 'update')) {
+        try {
+          await connectDB();
+          const dbUser = await User.findById(token.id).select('coupleId role');
+          if (dbUser?.coupleId) token.coupleId = dbUser.coupleId.toString();
+        } catch { /* best-effort */ }
       }
       return token;
     },
