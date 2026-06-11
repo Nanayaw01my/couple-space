@@ -1,9 +1,9 @@
 'use client';
 import { useSession } from 'next-auth/react';
-import { useEffect, useState } from 'react';
-import { formatDistanceToNow, format, differenceInDays } from 'date-fns';
+import { useEffect, useState, useCallback } from 'react';
+import { format, differenceInDays } from 'date-fns';
 import Link from 'next/link';
-import { MessageCircle, Gamepad2, Smile, MessageSquare, Link2 } from 'lucide-react';
+import { MessageCircle, Gamepad2, Smile, MessageSquare } from 'lucide-react';
 
 export default function DashboardPage() {
   const { data: session } = useSession();
@@ -11,12 +11,20 @@ export default function DashboardPage() {
   const [partner, setPartner] = useState<any>(null);
   const [copied, setCopied] = useState(false);
 
-  useEffect(() => {
-    fetch('/api/couple').then(r => r.json()).then(d => {
-      setCouple(d.couple);
-      setPartner(d.partner);
-    });
+  const fetchCouple = useCallback(async () => {
+    const res = await fetch('/api/couple').catch(() => null);
+    if (!res?.ok) return;
+    const d = await res.json();
+    setCouple(d.couple);
+    setPartner(d.partner);
   }, []);
+
+  useEffect(() => {
+    fetchCouple();
+    // Poll every 5 seconds so page updates the moment partner joins
+    const t = setInterval(fetchCouple, 5000);
+    return () => clearInterval(t);
+  }, [fetchCouple]);
 
   const coupleId = (session?.user as any)?.coupleId;
   const startDate = couple?.startDate ? new Date(couple.startDate) : null;

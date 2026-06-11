@@ -40,9 +40,11 @@ export async function POST(req: NextRequest) {
   if (couple.members.length >= 2) return NextResponse.json({ error: 'This couple is already full' }, { status: 400 });
   if (couple.members[0].toString() === userId) return NextResponse.json({ error: 'You cannot join your own invite' }, { status: 400 });
 
-  couple.members.push(userId);
-  couple.inviteCode = undefined; // invalidate code
-  await couple.save();
+  // Use $set/$unset to atomically update the couple
+  await Couple.findByIdAndUpdate(couple._id, {
+    $push: { members: userId },
+    $unset: { inviteCode: 1 },
+  });
 
   user.coupleId = couple._id;
   await user.save();
