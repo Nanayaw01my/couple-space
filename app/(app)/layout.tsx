@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
 import { Home, Gamepad2, MessageCircle, MessageSquare, Smile, LogOut } from 'lucide-react';
 import PushSetup from '@/components/PushSetup';
+import CallManager from '@/components/CallManager';
 
 const NAV = [
   { href: '/dashboard', icon: Home, label: 'Home' },
@@ -50,6 +51,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           })}
         </div>
       </nav>
+      <CallManager />
     </div>
   );
 }
