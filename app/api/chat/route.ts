@@ -5,13 +5,15 @@ import connectDB from '@/lib/mongodb';
 import ChatMessage from '@/lib/models/ChatMessage';
 import Couple from '@/lib/models/Couple';
 import { sendPushToUser } from '@/lib/push';
+import { getSessionCoupleId } from '@/lib/coupleId';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  const coupleId = (session.user as any).coupleId;
+  const userId = (session.user as any).id;
+  const coupleId = await getSessionCoupleId(userId, (session.user as any).coupleId);
   if (!coupleId) return NextResponse.json([]);
 
   await connectDB();

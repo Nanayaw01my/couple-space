@@ -6,6 +6,7 @@ import TruthDareRound from '@/lib/models/TruthDareRound';
 import Couple from '@/lib/models/Couple';
 import { sendPushToUser } from '@/lib/push';
 import { TRUTH_PROMPTS, DARE_PROMPTS } from '@/lib/questions';
+import { getSessionCoupleId } from '@/lib/coupleId';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,7 +15,8 @@ function randomFrom(arr: string[]) { return arr[Math.floor(Math.random() * arr.l
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  const coupleId = (session.user as any).coupleId;
+  const userId = (session.user as any).id;
+  const coupleId = await getSessionCoupleId(userId, (session.user as any).coupleId);
   if (!coupleId) return NextResponse.json({ current: null, history: [] });
 
   await connectDB();
@@ -27,8 +29,8 @@ export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const userId = (session.user as any).id;
-  const coupleId = (session.user as any).coupleId;
-  if (!coupleId) return NextResponse.json({ error: 'Not in a couple' }, { status: 400 });
+  const coupleId = await getSessionCoupleId(userId, (session.user as any).coupleId);
+  if (!coupleId) return NextResponse.json({ error: 'Not in a couple yet — please set up your couple space first' }, { status: 400 });
 
   const body = await req.json();
   await connectDB();
@@ -98,7 +100,8 @@ export async function POST(req: NextRequest) {
 export async function DELETE(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  const coupleId = (session.user as any).coupleId;
+  const userId = (session.user as any).id;
+  const coupleId = await getSessionCoupleId(userId, (session.user as any).coupleId);
   if (!coupleId) return NextResponse.json({ ok: true });
   await connectDB();
   await TruthDareRound.deleteMany({ coupleId });

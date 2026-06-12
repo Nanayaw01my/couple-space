@@ -4,13 +4,15 @@ import { authOptions } from '@/lib/auth';
 import connectDB from '@/lib/mongodb';
 import NeverHaveIEver from '@/lib/models/NeverHaveIEver';
 import { NEVER_HAVE_I_EVER } from '@/lib/questions';
+import { getSessionCoupleId } from '@/lib/coupleId';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
   const session = await getServerSession(authOptions);
   if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  const coupleId = (session.user as any).coupleId;
+  const userId = (session.user as any).id;
+  const coupleId = await getSessionCoupleId(userId, (session.user as any).coupleId);
   if (!coupleId) return NextResponse.json({ current: null, history: [] });
 
   await connectDB();
@@ -23,8 +25,8 @@ export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const userId = (session.user as any).id;
-  const coupleId = (session.user as any).coupleId;
-  if (!coupleId) return NextResponse.json({ error: 'Not in a couple' }, { status: 400 });
+  const coupleId = await getSessionCoupleId(userId, (session.user as any).coupleId);
+  if (!coupleId) return NextResponse.json({ error: 'Not in a couple yet — please set up your couple space first' }, { status: 400 });
 
   const body = await req.json();
   await connectDB();
@@ -58,7 +60,8 @@ export async function POST(req: NextRequest) {
 export async function DELETE() {
   const session = await getServerSession(authOptions);
   if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  const coupleId = (session.user as any).coupleId;
+  const userId = (session.user as any).id;
+  const coupleId = await getSessionCoupleId(userId, (session.user as any).coupleId);
   if (!coupleId) return NextResponse.json({ ok: true });
   await connectDB();
   await NeverHaveIEver.deleteMany({ coupleId });
