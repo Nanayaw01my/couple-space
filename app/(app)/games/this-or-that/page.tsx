@@ -20,10 +20,12 @@ export default function ThisOrThatPage() {
   const [submitting, setSubmitting] = useState(false);
 
   const fetchState = useCallback(async () => {
-    const res = await fetch('/api/games/this-or-that').catch(() => null);
-    if (!res?.ok) { setLoading(false); return; }
-    const data = await res.json();
-    setCurrent(data.current ?? null); setHistory(data.history ?? []); setLoading(false);
+    try {
+      const res = await fetch('/api/games/this-or-that').catch(() => null);
+      if (!res?.ok) { setLoading(false); return; }
+      const data = await res.json();
+      setCurrent(data.current ?? null); setHistory(data.history ?? []); setLoading(false);
+    } catch { setLoading(false); }
   }, []);
 
   useEffect(() => { fetchState(); const t = setInterval(fetchState, 4000); return () => clearInterval(t); }, [fetchState]);
@@ -32,10 +34,11 @@ export default function ThisOrThatPage() {
     setSubmitting(true);
     try {
       const res = await fetch('/api/games/this-or-that', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-      const data = await res.json();
-      if (!res.ok) { toast.error(data.error || 'Something went wrong'); return; }
+      let data: any = {};
+      try { data = await res.json(); } catch { /* non-JSON response */ }
+      if (!res.ok) { toast.error(data.error || `Error ${res.status}`); return; }
       await fetchState();
-    } catch { toast.error('Network error'); } finally { setSubmitting(false); }
+    } catch (err: any) { toast.error(err?.message || 'Network error'); } finally { setSubmitting(false); }
   }
 
   if (loading || !userId) return <div className="flex items-center justify-center min-h-[60vh]"><div className="text-4xl animate-pulse">🤔</div></div>;

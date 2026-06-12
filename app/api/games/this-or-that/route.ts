@@ -22,40 +22,45 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  const userId = (session.user as any).id;
-  const coupleId = await getSessionCoupleId(userId, (session.user as any).coupleId);
-  if (!coupleId) return NextResponse.json({ error: 'Not in a couple yet — please set up your couple space first' }, { status: 400 });
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const userId = (session.user as any).id;
+    const coupleId = await getSessionCoupleId(userId, (session.user as any).coupleId);
+    if (!coupleId) return NextResponse.json({ error: 'Not in a couple yet — please set up your couple space first' }, { status: 400 });
 
-  const body = await req.json();
-  await connectDB();
+    const body = await req.json();
+    await connectDB();
 
-  if (body.action === 'start') {
-    const existing = await ThisOrThat.findOne({ coupleId, status: 'picking' });
-    if (existing) return NextResponse.json({ error: 'Round already in progress' }, { status: 400 });
-    const count = await ThisOrThat.countDocuments({ coupleId });
-    const promptIndex = count % THIS_OR_THAT.length;
-    const prompt = THIS_OR_THAT[promptIndex];
-    const round = await ThisOrThat.create({
-      coupleId, roundNumber: count + 1, promptIndex,
-      thisOption: prompt.this, thatOption: prompt.that, picks: [],
-    });
-    return NextResponse.json(round);
+    if (body.action === 'start') {
+      const existing = await ThisOrThat.findOne({ coupleId, status: 'picking' });
+      if (existing) return NextResponse.json({ error: 'Round already in progress' }, { status: 400 });
+      const count = await ThisOrThat.countDocuments({ coupleId });
+      const promptIndex = count % THIS_OR_THAT.length;
+      const prompt = THIS_OR_THAT[promptIndex];
+      const round = await ThisOrThat.create({
+        coupleId, roundNumber: count + 1, promptIndex,
+        thisOption: prompt.this, thatOption: prompt.that, picks: [],
+      });
+      return NextResponse.json(round);
+    }
+
+    if (body.action === 'pick') {
+      const round = await ThisOrThat.findOne({ coupleId, status: 'picking' });
+      if (!round) return NextResponse.json({ error: 'No active round' }, { status: 404 });
+      const alreadyPicked = round.picks.some((p: any) => p.userId.toString() === userId);
+      if (alreadyPicked) return NextResponse.json({ error: 'Already picked' }, { status: 400 });
+      round.picks.push({ userId, userName: session.user.name, pick: body.pick });
+      if (round.picks.length >= 2) round.status = 'done';
+      await round.save();
+      return NextResponse.json(round);
+    }
+
+    return NextResponse.json({ error: 'Unknown action' }, { status: 400 });
+  } catch (err: any) {
+    console.error('[this-or-that POST]', err);
+    return NextResponse.json({ error: err?.message || 'Server error' }, { status: 500 });
   }
-
-  if (body.action === 'pick') {
-    const round = await ThisOrThat.findOne({ coupleId, status: 'picking' });
-    if (!round) return NextResponse.json({ error: 'No active round' }, { status: 404 });
-    const alreadyPicked = round.picks.some((p: any) => p.userId.toString() === userId);
-    if (alreadyPicked) return NextResponse.json({ error: 'Already picked' }, { status: 400 });
-    round.picks.push({ userId, userName: session.user.name, pick: body.pick });
-    if (round.picks.length >= 2) round.status = 'done';
-    await round.save();
-    return NextResponse.json(round);
-  }
-
-  return NextResponse.json({ error: 'Unknown action' }, { status: 400 });
 }
 
 export async function DELETE() {
