@@ -6,7 +6,7 @@ const TruthDareRoundSchema = new Schema({
   askerId: { type: Schema.Types.ObjectId, required: true },
   responderId: { type: Schema.Types.ObjectId, required: true },
   askerName: { type: String, required: true },
-  responderName: { type: String, required: true },
+  responderName: { type: String, default: '' },
   type: { type: String, enum: ['truth', 'dare'], default: null },
   prompt: { type: String, default: null },
   response: { type: String, default: '' },
