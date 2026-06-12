@@ -4,7 +4,9 @@ const ChatMessageSchema = new Schema({
   coupleId: { type: Schema.Types.ObjectId, required: true, index: true },
   senderId: { type: Schema.Types.ObjectId, required: true },
   senderName: { type: String, required: true },
-  content: { type: String, required: true },
+  content: { type: String, default: '' },
+  type: { type: String, enum: ['text', 'audio'], default: 'text' },
+  audioData: { type: String },
   createdAt: { type: Date, default: Date.now, index: true },
 });
 

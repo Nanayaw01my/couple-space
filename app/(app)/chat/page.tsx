@@ -1,10 +1,12 @@
 'use client';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
-import { Send } from 'lucide-react';
+import { Send, Mic } from 'lucide-react';
 import { format, isToday, isYesterday, isSameDay } from 'date-fns';
+import toast from 'react-hot-toast';
+import { playSend } from '@/lib/sounds';
 
-interface Msg { _id: string; senderId: string; senderName: string; content: string; createdAt: string; }
+interface Msg { _id: string; senderId: string; senderName: string; content: string; type?: string; audioData?: string; createdAt: string; }
 
 function DateSep({ date }: { date: Date }) {
   const label = isToday(date) ? 'Today' : isYesterday(date) ? 'Yesterday' : format(date, 'MMMM d, yyyy');
@@ -23,9 +25,11 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
+  const [recording, setRecording] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const prevCount = useRef(0);
+  const recorderRef = useRef<MediaRecorder | null>(null);
 
   const fetchMessages = useCallback(async () => {
     const res = await fetch('/api/chat').catch(() => null);
@@ -47,9 +51,47 @@ export default function ChatPage() {
   async function send() {
     if (!input.trim() || sending) return;
     const content = input.trim(); setInput(''); setSending(true);
+    playSend();
     const res = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content }) }).catch(() => null);
     if (res?.ok) { await fetchMessages(); bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }
     setSending(false);
+  }
+
+  async function startRecording() {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mr = new MediaRecorder(stream);
+      const chunks: Blob[] = [];
+      mr.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+      mr.onstop = async () => {
+        stream.getTracks().forEach(t => t.stop());
+        const blob = new Blob(chunks, { type: mr.mimeType || 'audio/webm' });
+        const reader = new FileReader();
+        reader.readAsDataURL(blob);
+        reader.onload = async () => {
+          const audioData = reader.result as string;
+          setSending(true);
+          playSend();
+          await fetch('/api/chat', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ type: 'audio', audioData }),
+          }).catch(() => null);
+          await fetchMessages();
+          bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+          setSending(false);
+        };
+      };
+      mr.start();
+      recorderRef.current = mr;
+      setRecording(true);
+    } catch {
+      toast.error('Microphone not available');
+    }
+  }
+
+  function stopRecording() {
+    recorderRef.current?.stop();
+    setRecording(false);
   }
 
   const items: Array<{ type: 'sep'; date: Date } | { type: 'msg'; msg: Msg }> = [];
@@ -78,7 +120,11 @@ export default function ChatPage() {
                   <div className={`flex flex-col ${mine ? 'items-end' : 'items-start'} max-w-[78%]`}>
                     {!mine && <span className="text-[11px] font-semibold text-gray-400 mb-0.5 ml-1">{msg.senderName}</span>}
                     <div className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${mine ? 'bg-rose-500 text-white rounded-br-sm' : 'bg-white text-gray-900 border border-gray-200 rounded-bl-sm shadow-sm'}`}>
-                      {msg.content}
+                      {msg.type === 'audio' ? (
+                        <audio src={msg.audioData} controls className="h-9 max-w-[180px]" style={{ borderRadius: '16px' }} />
+                      ) : (
+                        <span className="text-sm leading-relaxed whitespace-pre-wrap break-words">{msg.content}</span>
+                      )}
                     </div>
                     <span className="text-[10px] text-gray-400 mt-0.5 mx-1">{format(new Date(msg.createdAt), 'h:mm a')}</span>
                   </div>
@@ -91,6 +137,10 @@ export default function ChatPage() {
       </div>
       <div className="fixed bottom-[72px] left-0 right-0 z-30 bg-white/90 backdrop-blur border-t border-gray-200 px-3 py-2.5">
         <div className="flex items-end gap-2 max-w-lg mx-auto">
+          <button onClick={recording ? stopRecording : startRecording}
+            className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-all ${recording ? 'bg-red-500 animate-pulse' : 'bg-gray-100'}`}>
+            <Mic size={18} className={recording ? 'text-white' : 'text-gray-500'} />
+          </button>
           <textarea ref={textareaRef} value={input} onChange={e => setInput(e.target.value)}
             onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }}
             rows={1} placeholder="Type a message..." style={{ minHeight: 40, maxHeight: 84 }}

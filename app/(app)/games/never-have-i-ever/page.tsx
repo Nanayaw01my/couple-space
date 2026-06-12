@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import toast from 'react-hot-toast';
+import { playReveal, playPick } from '@/lib/sounds';
 
 interface Round {
   _id: string; roundNumber: number; statement: string;
@@ -36,7 +37,9 @@ export default function NeverHaveIEverPage() {
       let data: any = {};
       try { data = await res.json(); } catch { /* non-JSON response */ }
       if (!res.ok) { toast.error(data.error || `Error ${res.status}`); return; }
+      if ((body as any).action === 'answer') playPick();
       await fetchState();
+      if (data.status === 'done') playReveal();
     } catch (err: any) { toast.error(err?.message || 'Network error'); } finally { setSubmitting(false); }
   }
 

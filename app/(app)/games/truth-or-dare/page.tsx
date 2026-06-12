@@ -4,6 +4,7 @@ import { useSession } from 'next-auth/react';
 import toast from 'react-hot-toast';
 import { Send, MessageCircle, ChevronDown } from 'lucide-react';
 import { TRUTH_PROMPTS, DARE_PROMPTS } from '@/lib/questions';
+import { playSend } from '@/lib/sounds';
 
 function randomFrom(arr: string[]) { return arr[Math.floor(Math.random() * arr.length)]; }
 
@@ -111,6 +112,8 @@ export default function TruthOrDarePage() {
       let data: any = {};
       try { data = await res.json(); } catch { /* non-JSON response */ }
       if (!res.ok) { toast.error(data.error || `Error ${res.status}`); return; }
+      const action = (body as any).action;
+      if (action === 'send' || action === 'respond') playSend();
       await fetchState();
     } catch (err: any) { toast.error(err?.message || 'Network error'); } finally { setSubmitting(false); }
   }

@@ -3,7 +3,10 @@ import Link from 'next/link';
 const GAMES = [
   { href: '/games/truth-or-dare', emoji: '🎭', title: 'Truth or Dare', desc: 'Challenge each other from anywhere', color: 'border-rose-100 bg-rose-50' },
   { href: '/games/this-or-that', emoji: '🤔', title: 'This or That', desc: 'Pick one — see if you match!', color: 'border-pink-100 bg-pink-50' },
+  { href: '/games/would-you-rather', emoji: '🤯', title: 'Would You Rather', desc: 'Make impossible choices together', color: 'border-indigo-100 bg-indigo-50' },
   { href: '/games/never-have-i-ever', emoji: '🙈', title: 'Never Have I Ever', desc: 'Confess and see what your partner admits', color: 'border-purple-100 bg-purple-50' },
+  { href: '/games/open-questions', emoji: '💬', title: 'Open Questions', desc: 'Answer honestly, then compare!', color: 'border-amber-100 bg-amber-50' },
+  { href: '/games/pick-a-number', emoji: '🎰', title: 'Pick a Number', desc: '50 cards, 50 questions, endless conversations', color: 'border-teal-100 bg-teal-50' },
 ];
 
 export default function GamesPage() {
