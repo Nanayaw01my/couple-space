@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
-import { Home, Gamepad2, MessageCircle, MessageSquare, Smile, LogOut } from 'lucide-react';
+import { Home, Gamepad2, MessageCircle, MessageSquare, Smile, LogOut, Image, MessageCircleHeart } from 'lucide-react';
 import PushSetup from '@/components/PushSetup';
 import CallManager from '@/components/CallManager';
 
@@ -10,7 +10,9 @@ const NAV = [
   { href: '/dashboard', icon: Home, label: 'Home' },
   { href: '/chat', icon: MessageCircle, label: 'Chat' },
   { href: '/games', icon: Gamepad2, label: 'Games' },
+  { href: '/memories', icon: Image, label: 'Memories' },
   { href: '/mood', icon: Smile, label: 'Mood' },
+  { href: '/daily-talk', icon: MessageCircleHeart, label: 'Daily' },
   { href: '/notes', icon: MessageSquare, label: 'Notes' },
 ];
 
