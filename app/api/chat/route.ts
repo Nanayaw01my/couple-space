@@ -65,3 +65,45 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json(msg);
 }
+
+// Edit own text message
+export async function PATCH(req: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const userId = (session.user as any).id;
+  const coupleId = await getSessionCoupleId(userId, (session.user as any).coupleId);
+  if (!coupleId) return NextResponse.json({ error: 'Not in a couple' }, { status: 400 });
+  const { messageId, content } = await req.json();
+  if (!messageId || !content?.trim()) return NextResponse.json({ error: 'Invalid' }, { status: 400 });
+  await connectDB();
+  const msg = await ChatMessage.findOne({ _id: messageId, coupleId });
+  if (!msg) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+  if (msg.senderId.toString() !== userId) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  msg.content = content.trim();
+  msg.edited = true;
+  await msg.save();
+  return NextResponse.json(msg);
+}
+
+// Delete a message (own) — POST body { messageId }
+export async function DELETE(req: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const userId = (session.user as any).id;
+  const coupleId = await getSessionCoupleId(userId, (session.user as any).coupleId);
+
+  let body: any = null;
+  try { body = await req.json(); } catch {}
+
+  if (body?.messageId) {
+    if (!coupleId) return NextResponse.json({ error: 'Not in a couple' }, { status: 400 });
+    await connectDB();
+    const msg = await ChatMessage.findOne({ _id: body.messageId, coupleId });
+    if (!msg) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+    if (msg.senderId.toString() !== userId) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    await msg.deleteOne();
+    return NextResponse.json({ ok: true });
+  }
+
+  return NextResponse.json({ error: 'messageId required' }, { status: 400 });
+}
