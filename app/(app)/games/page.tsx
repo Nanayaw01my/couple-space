@@ -23,6 +23,42 @@ const GAMES = [
   { href: '/games/never-have-i-ever', emoji: '🙈', title: 'Never Have I Ever', desc: 'Confess and see what your partner admits', color: 'border-purple-100 bg-purple-50' },
   { href: '/games/open-questions', emoji: '💬', title: 'Open Questions', desc: 'Answer honestly, then compare!', color: 'border-amber-100 bg-amber-50' },
   { href: '/games/pick-a-number', emoji: '🎰', title: 'Pick a Number', desc: '50 cards, 50 questions, endless conversations', color: 'border-teal-100 bg-teal-50' },
+  {
+    href: '/games/date-night',
+    emoji: '🌙',
+    title: 'Date Night Generator',
+    desc: '55 date ideas across 5 categories. Save favorites, mark as done.',
+    badge: '55 Ideas',
+    color: 'border-slate-300 bg-gradient-to-br from-slate-600 to-gray-800',
+    light: false,
+  },
+  {
+    href: '/games/guess-partner',
+    emoji: '🧠',
+    title: 'Guess Your Partner',
+    desc: 'Answer 20 questions about yourselves. See how well you know each other!',
+    badge: '20 Questions',
+    color: 'border-blue-200 bg-gradient-to-br from-blue-400 to-indigo-500',
+    light: false,
+  },
+  {
+    href: '/games/love-quiz',
+    emoji: '💝',
+    title: 'Love Compatibility',
+    desc: 'A 10-question compatibility quiz. Answer independently, then compare.',
+    badge: '10 Questions',
+    color: 'border-pink-200 bg-gradient-to-br from-pink-400 to-rose-500',
+    light: false,
+  },
+  {
+    href: '/games/memory-challenge',
+    emoji: '🏆',
+    title: 'Memory Challenge',
+    desc: 'How well do you know each other? Answer 15 questions and find out.',
+    badge: '15 Questions',
+    color: 'border-purple-200 bg-gradient-to-br from-purple-400 to-violet-600',
+    light: false,
+  },
 ];
 
 export default function GamesPage() {
@@ -38,8 +74,8 @@ export default function GamesPage() {
           <Link key={g.href} href={g.href} className={`flex items-center gap-4 rounded-2xl border ${g.color} shadow-sm p-5 active:scale-95 transition-all`}>
             <span className="text-4xl">{g.emoji}</span>
             <div>
-              <p className="font-bold text-gray-900">{g.title}</p>
-              <p className="text-gray-500 text-sm">{g.desc}</p>
+              <p className={`font-bold ${'light' in g && g.light === false ? 'text-white' : 'text-gray-900'}`}>{g.title}</p>
+              <p className={`text-sm ${'light' in g && g.light === false ? 'text-white/70' : 'text-gray-500'}`}>{g.desc}</p>
             </div>
           </Link>
         ))}
