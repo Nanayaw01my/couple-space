@@ -1,6 +1,22 @@
 import Link from 'next/link';
 
 const GAMES = [
+  {
+    href: '/love-jar',
+    emoji: '🫙',
+    title: 'Love Jar',
+    desc: 'Leave secret love notes. Your partner opens them one by one.',
+    badge: 'Love Notes',
+    color: 'border-rose-200 bg-gradient-to-br from-rose-50 to-red-50',
+  },
+  {
+    href: '/goals',
+    emoji: '💫',
+    title: 'Couple Goals',
+    desc: 'Your shared bucket list — tick off adventures and dreams together.',
+    badge: 'Bucket List',
+    color: 'border-pink-200 bg-gradient-to-br from-pink-50 to-fuchsia-50',
+  },
   { href: '/games/truth-or-dare', emoji: '🎭', title: 'Truth or Dare', desc: 'Challenge each other from anywhere', color: 'border-rose-100 bg-rose-50' },
   { href: '/games/this-or-that', emoji: '🤔', title: 'This or That', desc: 'Pick one — see if you match!', color: 'border-pink-100 bg-pink-50' },
   { href: '/games/would-you-rather', emoji: '🤯', title: 'Would You Rather', desc: 'Make impossible choices together', color: 'border-indigo-100 bg-indigo-50' },
