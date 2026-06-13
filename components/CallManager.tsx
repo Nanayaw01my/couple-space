@@ -284,7 +284,7 @@ export default function CallManager() {
       </div>
 
       {cs === 'idle' && (
-        <div className="fixed bottom-20 right-4 z-40">
+        <div className="fixed bottom-36 right-4 z-40">
           {picker && (
             <div className="absolute bottom-14 right-0 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden w-44">
               <button onClick={() => startCall('audio')} className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 active:bg-gray-100 transition-colors">
